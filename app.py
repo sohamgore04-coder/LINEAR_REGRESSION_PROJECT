@@ -4,18 +4,26 @@ import pandas as pd
 import os
 
 # =========================
-# Load Files Safely
+# Load Model Safely
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 model_path = os.path.join(BASE_DIR, "model.pkl")
-columns_path = os.path.join(BASE_DIR, "columns.pkl")
 
-# Load model
 model = joblib.load(model_path)
 
-# Load training columns
-columns = joblib.load(columns_path)
+# =========================
+# Hardcoded Columns (Match Training)
+# =========================
+columns = [
+    'age',
+    'bmi',
+    'children',
+    'sex_male',
+    'smoker_yes',
+    'region_northwest',
+    'region_southeast',
+    'region_southwest'
+]
 
 # =========================
 # Page Config
@@ -78,7 +86,7 @@ if st.button("Predict Insurance Cost 💸"):
         input_df = pd.DataFrame([input_dict])
 
         # =========================
-        # Match Training Columns
+        # Align Columns
         # =========================
         input_df = input_df.reindex(columns=columns, fill_value=0)
 
