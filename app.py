@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 # =========================
-# Load Model
+# Load Model Safely
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "model.pkl")
@@ -25,9 +25,6 @@ st.set_page_config(
 st.title("💰 Medical Insurance Cost Prediction")
 st.write("Enter details to estimate the **insurance charges**.")
 
-# DEBUG (remove later)
-st.write("Model expects:", model.feature_names_in_)
-
 st.markdown("---")
 
 # =========================
@@ -35,7 +32,7 @@ st.markdown("---")
 # =========================
 age = st.number_input("Age", 18, 100, 25)
 bmi = st.number_input("BMI", 10.0, 50.0, 25.0)
-children = st.number_input("Children", 0, 5, 0)
+children = st.number_input("Number of Children", 0, 5, 0)
 
 sex = st.selectbox("Gender", ["male", "female"])
 smoker = st.selectbox("Smoker", ["yes", "no"])
@@ -49,11 +46,11 @@ st.markdown("---")
 # =========================
 # Prediction
 # =========================
-if st.button("Predict 💸"):
+if st.button("Predict Insurance Cost 💸"):
 
     try:
         # =========================
-        # One-Hot Encoding (CORRECT)
+        # One-Hot Encoding (MATCH TRAINING)
         # =========================
         input_dict = {
             "age": age,
@@ -69,22 +66,34 @@ if st.button("Predict 💸"):
         input_df = pd.DataFrame([input_dict])
 
         # =========================
-        # STRICT ALIGNMENT (KEY FIX)
+        # Align with Model Features (KEY FIX)
         # =========================
         input_df = input_df.reindex(columns=model.feature_names_in_, fill_value=0)
 
         # =========================
         # Prediction
         # =========================
-        prediction = model.predict(input_df)[0]
+        prediction = model.predict(input_df)
 
-        st.success(f"Estimated Cost: ₹ {round(prediction, 2)}")
+        # Convert numpy array → float
+        prediction_value = float(prediction[0])
 
+        # =========================
+        # Output
+        # =========================
+        st.success(f"Estimated Insurance Cost: ₹ {round(prediction_value, 2)}")
+
+        # =========================
         # Insights
+        # =========================
         if smoker == "yes":
-            st.warning("⚠️ Smoking increases cost significantly")
+            st.warning("⚠️ Smoking significantly increases insurance costs.")
+
         if bmi > 30:
-            st.info("💡 High BMI may increase cost")
+            st.info("💡 Higher BMI may lead to higher charges.")
+
+        if age > 50:
+            st.info("💡 Age is a strong factor in insurance pricing.")
 
     except Exception as e:
         st.error(f"Error: {e}")
