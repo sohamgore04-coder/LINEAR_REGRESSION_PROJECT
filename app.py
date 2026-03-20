@@ -1,96 +1,91 @@
 import streamlit as st
-import numpy as np
+import joblib
 import pandas as pd
-import pickle
+import os
 
 # =========================
-# Load Model & Files
+# Load Model
 # =========================
-model = pickle.load(open("model.pkl", "rb"))
-
-# If you used scaler
-try:
-    scaler = pickle.load(open("scaler.pkl", "rb"))
-except:
-    scaler = None
-
-# If you saved training columns
-try:
-    columns = pickle.load(open("columns.pkl", "rb"))
-except:
-    columns = None
-
+current_dir = os.path.dirname(__file__)
+model_path = os.path.join(current_dir, "model.pkl")
+model = joblib.load(model_path)
 
 # =========================
 # Page Config
 # =========================
 st.set_page_config(
-    page_title="Medical Insurance Cost Predictor",
-    page_icon="💰",
-    layout="centered"
+    page_title="Insurance Cost Predictor",
+    page_icon="💰"
 )
 
 # =========================
 # Title
 # =========================
-st.title("💰 Medical Insurance Cost Predictor")
-st.markdown("Predict insurance charges based on user details")
+st.title("💰 Medical Insurance Cost Prediction")
+st.write("Enter details to estimate the **insurance charges**.")
 
-st.divider()
+st.markdown("---")
 
 # =========================
-# User Inputs
+# Numeric-style Inputs
 # =========================
-age = st.slider("Age", 18, 100, 25)
+
+age = st.number_input("Age", min_value=18, max_value=100, value=25)
+
 bmi = st.number_input("BMI", min_value=10.0, max_value=50.0, value=25.0)
-children = st.slider("Number of Children", 0, 5, 0)
 
-sex = st.selectbox("Gender", ["male", "female"])
-smoker = st.selectbox("Smoker", ["yes", "no"])
-region = st.selectbox("Region", ["northwest", "northeast", "southeast", "southwest"])
+children = st.number_input("Number of Children", min_value=0, max_value=5, value=0)
+
+# Instead of dropdown → numeric encoding
+sex = st.number_input("Gender (0 = Female, 1 = Male)", min_value=0, max_value=1, value=1)
+
+smoker = st.number_input("Smoker (0 = No, 1 = Yes)", min_value=0, max_value=1, value=0)
+
+# Region encoding (simple numeric)
+region = st.number_input(
+    "Region (0 = Northeast, 1 = Northwest, 2 = Southeast, 3 = Southwest)",
+    min_value=0,
+    max_value=3,
+    value=0
+)
+
+st.markdown("---")
 
 # =========================
-# Encode Input
+# Prepare Input
 # =========================
-input_dict = {
+# IMPORTANT: Must match training format
+
+input_data = pd.DataFrame([{
     "age": age,
     "bmi": bmi,
     "children": children,
-    "sex_male": 1 if sex == "male" else 0,
-    "smoker_yes": 1 if smoker == "yes" else 0,
-    "region_northwest": 1 if region == "northwest" else 0,
-    "region_southeast": 1 if region == "southeast" else 0,
-    "region_southwest": 1 if region == "southwest" else 0,
-}
-
-input_df = pd.DataFrame([input_dict])
-
-# Align columns with training
-if columns is not None:
-    input_df = input_df.reindex(columns=columns, fill_value=0)
-
-# Apply scaling if used
-if scaler is not None:
-    input_df = scaler.transform(input_df)
+    "sex": sex,
+    "smoker": smoker,
+    "region": region
+}])
 
 # =========================
 # Prediction
 # =========================
 if st.button("Predict Insurance Cost 💸"):
 
-    prediction = model.predict(input_df)[0]
+    prediction = model.predict(input_data)[0]
 
     st.success(f"Estimated Insurance Cost: ₹ {round(prediction, 2)}")
 
-    # Extra insights
-    if smoker == "yes":
-        st.warning("⚠️ Smoking significantly increases insurance costs.")
+    # Insights (industry touch 🔥)
+    if smoker == 1:
+        st.warning("⚠️ Smoking increases insurance cost significantly.")
 
     if bmi > 30:
-        st.info("💡 Higher BMI may lead to higher charges.")
+        st.info("💡 High BMI may lead to higher charges.")
+
+    if age > 50:
+        st.info("💡 Age is a strong factor in cost increase.")
 
 # =========================
 # Footer
 # =========================
-st.divider()
-st.markdown("Built by Soham Gore 🚀")
+st.markdown("---")
+st.caption("Built by Soham Gore 🚀")
