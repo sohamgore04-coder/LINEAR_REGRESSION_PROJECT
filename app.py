@@ -4,26 +4,12 @@ import pandas as pd
 import os
 
 # =========================
-# Load Model Safely
+# Load Model
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "model.pkl")
 
 model = joblib.load(model_path)
-
-# =========================
-# Hardcoded Columns (Match Training)
-# =========================
-columns = [
-    'age',
-    'bmi',
-    'children',
-    'sex_male',
-    'smoker_yes',
-    'region_northwest',
-    'region_southeast',
-    'region_southwest'
-]
 
 # =========================
 # Page Config
@@ -42,7 +28,7 @@ st.write("Enter details to estimate the **insurance charges**.")
 st.markdown("---")
 
 # =========================
-# Inputs (Numeric Style)
+# Inputs (Numeric Encoding)
 # =========================
 age = st.number_input("Age", min_value=18, max_value=100, value=25)
 
@@ -70,25 +56,16 @@ if st.button("Predict Insurance Cost 💸"):
 
     try:
         # =========================
-        # Convert Inputs → One-Hot Encoding
+        # MATCH TRAINING FORMAT
         # =========================
-        input_dict = {
+        input_df = pd.DataFrame([{
             "age": age,
             "bmi": bmi,
             "children": children,
-            "sex_male": 1 if sex == 1 else 0,
-            "smoker_yes": 1 if smoker == 1 else 0,
-            "region_northwest": 1 if region == 1 else 0,
-            "region_southeast": 1 if region == 2 else 0,
-            "region_southwest": 1 if region == 3 else 0,
-        }
-
-        input_df = pd.DataFrame([input_dict])
-
-        # =========================
-        # Align Columns
-        # =========================
-        input_df = input_df.reindex(columns=columns, fill_value=0)
+            "sex": sex,
+            "smoker": smoker,
+            "region": region
+        }])
 
         # =========================
         # Prediction
@@ -98,7 +75,7 @@ if st.button("Predict Insurance Cost 💸"):
         st.success(f"Estimated Insurance Cost: ₹ {round(prediction, 2)}")
 
         # =========================
-        # Insights (Professional Touch)
+        # Insights
         # =========================
         if smoker == 1:
             st.warning("⚠️ Smoking significantly increases insurance costs.")
