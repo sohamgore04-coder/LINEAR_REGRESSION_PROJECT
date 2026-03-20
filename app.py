@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 # =========================
-# Load Model Safely
+# Load Model
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "model.pkl")
@@ -49,9 +49,7 @@ st.markdown("---")
 if st.button("Predict Insurance Cost 💸"):
 
     try:
-        # =========================
-        # One-Hot Encoding (MATCH TRAINING)
-        # =========================
+        # One-hot encoding
         input_dict = {
             "age": age,
             "bmi": bmi,
@@ -65,27 +63,19 @@ if st.button("Predict Insurance Cost 💸"):
 
         input_df = pd.DataFrame([input_dict])
 
-        # =========================
-        # Align with Model Features (KEY FIX)
-        # =========================
+        # Align features
         input_df = input_df.reindex(columns=model.feature_names_in_, fill_value=0)
 
-        # =========================
-        # Prediction
-        # =========================
+        # Predict
         prediction = model.predict(input_df)
 
-        # Convert numpy array → float
-        prediction_value = float(prediction[0])
+        # FINAL FIX HERE
+        prediction_value = float(prediction.flatten()[0])
 
-        # =========================
         # Output
-        # =========================
         st.success(f"Estimated Insurance Cost: ₹ {round(prediction_value, 2)}")
 
-        # =========================
         # Insights
-        # =========================
         if smoker == "yes":
             st.warning("⚠️ Smoking significantly increases insurance costs.")
 
