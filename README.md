@@ -74,11 +74,3 @@ The app is deployed using Streamlit Cloud.
 🔗 Live App: https://your-app-link.streamlit.app
 
 ---
-
-## 👨‍💻 Author
-
-**Soham Gore**
-
----
-
-## ⭐ If you like this project, give it a star!
